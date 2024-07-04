@@ -30,4 +30,4 @@ Configurations for api fetcher, database and grapher can be found in /src/config
 
 ## Feedback
 
-Please feel free to submit issues if you encounter any whilst using NSW fuel price checker.
+Please feel free to submit issues if you encounter any whilst using the NSW fuel price checker.
