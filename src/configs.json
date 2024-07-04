@@ -1,0 +1,9 @@
+{
+    "AUTHORIZATION_HEADER": "Basic MU1ZU1JBeDV5dnFIVVpjNlZHdHhpeDZvTUEycWdmUlQ6Qk12V2FjdzE1RXQ4dUZHRg==",
+    "start_timestamp": 1719990000,
+    "db_name": "fuel_prices.db",
+    "fetch_interval": 3600,
+    "visualizer_period": 7,
+    "visualizer_fuel_type": "E10",
+    "visualizer_station_code": ""
+}
