@@ -44,8 +44,6 @@ class Visualizer:
         x_tick_positions = pd.date_range(start=grouped_df['date'].min(), end=grouped_df['date'].max())
         x_tick_labels = x_tick_positions.strftime('%Y-%m-%d')
         plt.xticks(ticks=x_tick_positions, labels=x_tick_labels, rotation=45)
-        print(df)
-        print(grouped_df)
 
         # y-axis ticks
         min_price = math.floor(df['price'].min())
