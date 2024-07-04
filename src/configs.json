@@ -3,7 +3,7 @@
     "start_timestamp": 1719990000,
     "db_name": "fuel_prices.db",
     "fetch_interval": 3600,
-    "visualizer_period": 7,
+    "visualizer_period": 30,
     "visualizer_fuel_type": "E10",
     "visualizer_station_code": ""
 }
