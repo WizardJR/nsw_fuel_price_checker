@@ -139,8 +139,9 @@ class Database:
             params.append(end_date)
         
         if station_code:
-            conditions.append("prices.station_code = ?")
-            params.append(station_code)
+            placeholders = ','.join('?' for _ in station_code)
+            conditions.append(f"prices.station_code IN ({placeholders})")
+            params.extend(station_code)
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
