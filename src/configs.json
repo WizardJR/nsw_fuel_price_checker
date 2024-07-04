@@ -5,5 +5,5 @@
     "fetch_interval": 3600,
     "visualizer_period": 30,
     "visualizer_fuel_type": "E10",
-    "visualizer_station_code": ""
+    "visualizer_station_code": []
 }
