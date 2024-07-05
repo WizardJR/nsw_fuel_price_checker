@@ -1,9 +1,6 @@
 {
     "AUTHORIZATION_HEADER": "Basic YourAuthHeader",
-    "start_timestamp": 1719990000,
+    "start_timestamp": 1719964800,
     "db_name": "fuel_prices.db",
-    "fetch_interval": 3600,
-    "visualizer_period": 30,
-    "visualizer_fuel_type": "E10",
-    "visualizer_station_code": []
+    "fetch_interval": 3600
 }
