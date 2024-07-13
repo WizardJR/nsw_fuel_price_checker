@@ -25,7 +25,7 @@ python main.py
 python Visualizer.py
 # Graph past data (optional)
 
-Configurations for api fetcher, database and grapher can be found in /src/configs.json
+Configurations for api fetcher and database can be found in /src/configs.json
 ```
 
 ## Feedback
