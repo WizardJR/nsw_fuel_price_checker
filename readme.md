@@ -25,6 +25,9 @@ python main.py
 python Visualizer.py
 # Graph past data (optional)
 
+python Searcher.py
+# Save filtered data to csv
+
 Configurations for api fetcher and database can be found in /src/configs.json
 ```
 
