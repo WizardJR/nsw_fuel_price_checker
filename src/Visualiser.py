@@ -94,7 +94,7 @@ if __name__ == "__main__":
     fuel_type = 'E10'
     station_codes = []
     interval = 'D'
-    start_date = (datetime.now() - timedelta(days=7)).timestamp()
+    start_date = (datetime.now() - timedelta(days=30)).timestamp()
     end_date = datetime.now().timestamp()
     visualizer = Visualizer(configs, fuel_type, start_date, end_date, station_codes)
     visualizer.plot_prices()

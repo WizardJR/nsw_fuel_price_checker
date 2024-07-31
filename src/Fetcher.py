@@ -7,7 +7,6 @@ class Fetcher:
     def __init__(self, AUTHORIZATION_HEADER):
         self.AUTHORIZATION_HEADER = AUTHORIZATION_HEADER
         self.token_time = None
-        # self.token = None
         self.get_credentials()
         
     def get_credentials(self):
