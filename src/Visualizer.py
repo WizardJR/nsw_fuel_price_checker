@@ -47,7 +47,6 @@ class Visualizer:
             daily_avg_price=('price', 'mean')
         ).reset_index()
         daily_avg_df['date'] = pd.to_datetime(daily_avg_df['date'])
-        daily_avg_df.to_csv('avg_new.csv', index=False)
         # Default size
         plt.figure(figsize=(14, 8))
 
@@ -94,8 +93,8 @@ if __name__ == "__main__":
     f.close
     fuel_type = 'E10'
     station_codes = []
-    interval = 7
-    start_date = (datetime.now() - timedelta(days=7)).timestamp()
+    interval = 'D'
+    start_date = (datetime.now() - timedelta(days=30)).timestamp()
     end_date = datetime.now().timestamp()
     visualizer = Visualizer(configs, fuel_type, start_date, end_date, station_codes)
     visualizer.plot_prices()
