@@ -2,5 +2,5 @@
     "AUTHORIZATION_HEADER": "Basic YourAuthHeader",
     "start_timestamp": 1719964800,
     "db_name": "fuel_prices.db",
-    "fetch_interval": 3600
+    "fetch_interval": 60
 }
