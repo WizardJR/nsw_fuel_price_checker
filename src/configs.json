@@ -1,5 +1,6 @@
 {
     "AUTHORIZATION_HEADER": "Basic MU1ZU1JBeDV5dnFIVVpjNlZHdHhpeDZvTUEycWdmUlQ6Qk12V2FjdzE1RXQ4dUZHRg==",
+    "API_KEY": "1MYSRAx5yvqHUZc6VGtxix6oMA2qgfRT",
     "start_timestamp": 1719964800,
     "db_name": "fuel_prices.db",
     "fetch_interval": 60
