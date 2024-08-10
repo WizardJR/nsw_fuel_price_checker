@@ -28,8 +28,7 @@ python Visualizer.py
 python Searcher.py
 # Save filtered data to csv
 
-Configurations for api fetcher and database can be found in /src/configs.json
-```
+Configurations for api fetcher and database can be found in /src/configs_template.json where you need to insert your own credentials and rename it to configs.json
 
 ## Feedback
 

@@ -4,10 +4,11 @@ import hashlib
 import secrets
 
 class Fetcher:
-    def __init__(self, AUTHORIZATION_HEADER):
+    def __init__(self, AUTHORIZATION_HEADER, API_KEY):
         self.AUTHORIZATION_HEADER = AUTHORIZATION_HEADER
         self.token_time = None
         self.get_credentials()
+        self.API_KEY = API_KEY
         
     def get_credentials(self):
         url = "https://api.onegov.nsw.gov.au/oauth/client_credential/accesstoken?grant_type=client_credentials"
@@ -34,7 +35,7 @@ class Fetcher:
         headers = {
             'authorization': f'Bearer {self.token}',
             'content-type': "application/json; charset=utf-8",
-            'apikey': "1MYSRAx5yvqHUZc6VGtxix6oMA2qgfRT",
+            'apikey': self.API_KEY,
             'transactionid': self.generate_random_hash(),
             'requesttimestamp': dt.strftime("%d-%m-%y %I:%M:%S %p"),
         }
@@ -54,7 +55,7 @@ class Fetcher:
         headers = {
             'authorization': f'Bearer {self.token}',
             'content-type': "application/json; charset=utf-8",
-            'apikey': "1MYSRAx5yvqHUZc6VGtxix6oMA2qgfRT",
+            'apikey': self.API_KEY,
             'transactionid': self.generate_random_hash(),
             'requesttimestamp': dt.strftime("%d-%m-%y %I:%M:%S %p"),
         }
