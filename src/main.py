@@ -4,9 +4,13 @@ from Database import Database
 import json
 
 def scheduled_update(scheduler, interval, database):
-    database.update_db()
-    print("Database updated.")
-    scheduler.enter(interval, 1, scheduled_update, (scheduler, interval, database))
+    try:
+        database.update_db()
+        print("Database updated.")
+    except:
+        raise Exception("An error has occured when updating database")
+    finally:
+        scheduler.enter(interval, 1, scheduled_update, (scheduler, interval, database))
 
 if __name__ == "__main__":
     
