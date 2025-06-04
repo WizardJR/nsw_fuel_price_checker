@@ -285,3 +285,35 @@ class Database:
     def extract_postcode(self, address):
         matches = re.findall(r'\b\d{4}\b', address)
         return matches[-1] if matches else None
+    
+    def fetch_all_station_locations(self):
+        query = """
+        SELECT station_code, latitude, longitude
+        FROM stations
+        WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+        """
+        result = self.conn.execute(query).fetchall()
+        columns = ["station_code", "latitude", "longitude"]
+        return pd.DataFrame(result, columns=columns)
+
+    def get_nearest_stations(self, target_station_code, fuel_type, count=3):
+        locations_df = self.fetch_all_station_locations()
+        
+        available_df = self.fetch_average_price(fuel_type=fuel_type, interval="D")
+        stations_with_fuel = available_df["station_code"].unique().astype(str)
+
+        locations_df = locations_df[locations_df["station_code"].astype(str).isin(stations_with_fuel)]
+
+        if target_station_code not in locations_df["station_code"].astype(str).values:
+            raise ValueError(f"Target station {target_station_code} not found in filtered station list for fuel type {fuel_type}.")
+
+        target_row = locations_df[locations_df["station_code"].astype(str) == target_station_code].iloc[0]
+        target_lat, target_lon = target_row["latitude"], target_row["longitude"]
+
+        distances = locations_df[locations_df["station_code"].astype(str) != target_station_code].copy()
+        distances["distance"] = distances.apply(
+            lambda row: geodesic((target_lat, target_lon), (row["latitude"], row["longitude"])).km,
+            axis=1
+        )
+
+        return distances.sort_values("distance").head(count)["station_code"].astype(str).tolist()
