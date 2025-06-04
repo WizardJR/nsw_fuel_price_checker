@@ -111,6 +111,9 @@ class Database:
         self.conn.commit()
         self.conn.close()
     
+    def fetch_stations(self, station_codes, brand_ids, station_ids):
+        pass
+
     def fetch_data(self, fuel_type, start_date=None, end_date=None, station_codes=None, is_newest=False):
         if ((start_date and end_date) and is_newest):
                 raise ValueError("Please either specify a period or choose to fetch newest data, but not both")
