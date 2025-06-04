@@ -61,8 +61,10 @@ class Visualizer:
         plt.xticks(ticks=x_tick_positions, labels=x_tick_labels, rotation=45)
 
         # y-axis ticks
-        min_price = math.floor(df['price'].min())
-        max_price = math.ceil(df['price'].max())
+        # min_price = math.floor(df['price'].min())
+        # max_price = math.ceil(df['price'].max())
+        min_price = math.floor(daily_avg_df['daily_avg_price'].min()) - 30
+        max_price = math.ceil(daily_avg_df['daily_avg_price'].max()) + 30
         min_price = min_price - (min_price % 5)
         max_price = math.ceil(max_price / 5) * 5
         y_ticks = np.arange(min_price, max_price + 5, 5)

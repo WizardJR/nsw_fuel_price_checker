@@ -10,7 +10,7 @@ class Database:
         self.start_timestamp = configs['start_timestamp']
         self.conn = sqlite3.connect(configs['db_name'])
         self.cursor = self.conn.cursor()
-        self.fetcher = Fetcher(configs['AUTHORIZATION_HEADER'])
+        self.fetcher = Fetcher(configs['AUTHORIZATION_HEADER'], configs['API_KEY'])
         
     def update_db(self):
         all_prices = self.fetcher.fetch_all_v1_data()
