@@ -1,3 +1,6 @@
 __pycache__
 configs.json
 fuel_prices.db
+30_day_forecast.csv
+best_avg_model.pth
+prev_30_day_record.csv
