@@ -283,5 +283,5 @@ class Database:
         return unix_timestamp
     
     def extract_postcode(self, address):
-        match = re.search(r'(?<!\d)\b\d{4}\b(?!\d)', address)
-        return match.group(0) if match else None
+        matches = re.findall(r'\b\d{4}\b', address)
+        return matches[-1] if matches else None
