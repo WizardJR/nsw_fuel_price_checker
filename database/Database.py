@@ -4,6 +4,8 @@ from datetime import datetime
 import pytz
 from Fetcher import Fetcher
 import re
+import geopy
+from geopy.distance import geodesic
 
 class Database:
     def __init__(self, configs):
