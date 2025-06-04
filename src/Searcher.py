@@ -75,6 +75,3 @@ if __name__ == "__main__":
     is_newest = False
 
     searcher = Searcher(configs, 'E10', end_date, days_before_end, station_codes, avg_interval, is_newest, postcode, brand_ids, station_ids)
-    # searcher.save_to_csv(searcher.fetch_stations(), 'Stations')
-    # searcher.save_to_csv(searcher.fetch_data(), 'Prices_E10')
-    # searcher.save_to_csv(searcher.fetch_average_price(), 'Average_E10')
