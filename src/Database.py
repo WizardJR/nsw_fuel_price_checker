@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 from Fetcher import Fetcher
+import re
 
 class Database:
     def __init__(self, configs):
@@ -67,24 +68,30 @@ class Database:
         create_stations_table_query = """
         CREATE TABLE IF NOT EXISTS stations (
             brand_id TEXT,
-            station_id TEXT PRIMARY KEY,
+            station_id TEXT,
             brand TEXT,
-            station_code TEXT,
+            station_code TEXT PRIMARY KEY,
             name TEXT,
             address TEXT,
             latitude REAL,
             longitude REAL,
             is_adblue_available BOOLEAN
+            postcode TEXT
         )
         """
         cursor.execute(create_stations_table_query)
+        cursor.execute("PRAGMA table_info(stations);")
+        columns = [info[1] for info in cursor.fetchall()]
+        if 'postcode' not in columns:
+            cursor.execute("ALTER TABLE stations ADD COLUMN postcode TEXT")
 
         for _, row in stations_df.iterrows():
+            postcode = self.extract_postcode(row['address'])
             insert_query = """
-            INSERT INTO stations (brand_id, station_id, brand, station_code, name, address, latitude, longitude, is_adblue_available) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO stations (brand_id, station_id, brand, station_code, name, address, latitude, longitude, is_adblue_available, postcode) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
-            if not self.station_exists(cursor, row['stationid']):
+            if not self.station_exists(cursor, row['code']):
                 cursor.execute(insert_query, (
                     row['brandid'],
                     row['stationid'],
@@ -94,33 +101,63 @@ class Database:
                     row['address'],
                     row['location.latitude'],
                     row['location.longitude'],
-                    row['isAdBlueAvailable']
+                    row['isAdBlueAvailable'],
+                    postcode
                 ))
             else:
                 continue
         self.conn.commit()
 
-    def station_exists(self, cursor, station_id):
+    def station_exists(self, cursor, station_code):
         cursor.execute("""
         SELECT 1 FROM stations 
-        WHERE station_id = ?
-        """, (station_id,))
+        WHERE station_code = ?
+        """, (station_code,))
         return cursor.fetchone() is not None
 
     def unload(self):
         self.conn.commit()
         self.conn.close()
     
-    def fetch_stations(self, station_codes, brand_ids, station_ids):
-        pass
+    def fetch_stations(self, station_codes=None, brand_ids=None, station_ids=None, postcode=None):
+        if not (station_codes or brand_ids or station_ids or postcode):
+            raise ValueError("At least one filter criteria must be provided")
+        query = """
+        SELECT * FROM stations WHERE 1=1
+        """
+        params = []
 
-    def fetch_data(self, fuel_type, start_date=None, end_date=None, station_codes=None, is_newest=False):
+        if station_codes:
+            placeholders = ','.join('?' for _ in station_codes)
+            query += f" AND station_code IN ({placeholders})"
+            params.extend(station_codes)
+
+        if brand_ids:
+            placeholders = ','.join('?' for _ in brand_ids)
+            query += f" AND brand_id IN ({placeholders})"
+            params.extend(brand_ids)
+
+        if station_ids:
+            placeholders = ','.join('?' for _ in station_ids)
+            query += f" AND station_id IN ({placeholders})"
+            params.extend(station_ids)
+
+        if postcode:
+            placeholders = ','.join('?' for _ in postcode)
+            query += f" AND stations.postcode IN ({placeholders})"
+            params.extend(postcode)
+
+        df = pd.read_sql_query(query, self.conn, params=params)
+        return df
+
+    def fetch_data(self, fuel_type, start_date=None, end_date=None, station_codes=None, postcode=None, is_newest=False):
         if ((start_date and end_date) and is_newest):
                 raise ValueError("Please either specify a period or choose to fetch newest data, but not both")
         base_query = """
         SELECT 
             stations.name, 
             stations.address, 
+            stations.postcode,
             prices.fuel_type, 
             prices.price, 
             prices.timestamp, 
@@ -145,6 +182,11 @@ class Database:
             base_query += f" AND prices.station_code IN ({placeholders})"
             params.extend(station_codes)
 
+        if postcode:
+            placeholders = ','.join('?' for _ in postcode)
+            base_query += f" AND stations.postcode IN ({placeholders})"
+            params.extend(postcode)
+
         if is_newest:
             query = f"""
                 WITH latest_prices AS (
@@ -167,7 +209,7 @@ class Database:
         df = pd.read_sql_query(query, self.conn, params=params)
         return df
 
-    def fetch_average_price(self, fuel_type=None, start_date=None, end_date=None, station_codes=None, interval='M'):
+    def fetch_average_price(self, fuel_type=None, start_date=None, end_date=None, station_codes=None, postcodes=None, interval='M'):
         if interval == 'D':
             date_format = "date(prices.timestamp, 'unixepoch')"
         elif interval == 'W':
@@ -186,6 +228,8 @@ class Database:
                 prices.fuel_type
             FROM 
                 prices
+            JOIN 
+                stations ON prices.station_code = stations.station_code
             WHERE 
                 prices.fuel_type = ?
         """
@@ -202,6 +246,11 @@ class Database:
             query += f" AND prices.station_code IN ({placeholders})"
             params.extend(station_codes)
 
+        if postcodes:
+            placeholders = ','.join('?' for _ in postcodes)
+            query += f" AND stations.postcode IN ({placeholders})"
+            params.extend(postcodes)
+
         query += """
             GROUP BY 
                 interval_date,
@@ -216,6 +265,7 @@ class Database:
             interval_station_avg.station_avg_price AS price,
             interval_station_avg.interval_date AS timestamp,
             stations.station_code,
+            stations.postcode,
             interval_station_avg.fuel_type
         FROM 
             interval_station_avg
@@ -231,3 +281,7 @@ class Database:
         localized_dt = timezone.localize(dt)
         unix_timestamp = int(localized_dt.timestamp())
         return unix_timestamp
+    
+    def extract_postcode(self, address):
+        match = re.search(r'(?<!\d)\b\d{4}\b(?!\d)', address)
+        return match.group(0) if match else None
