@@ -64,9 +64,6 @@ class Fetcher:
         return response.json()
     
     def generate_random_hash(self):
-        # Generate a random 256-bit (32 bytes) token
         random_bytes = secrets.token_bytes(32)
-        # Create a SHA-256 hash of the random bytes
         hash_object = hashlib.sha256(random_bytes)
-        # Return the hexadecimal representation of the hash
         return hash_object.hexdigest()
