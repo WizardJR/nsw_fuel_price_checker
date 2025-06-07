@@ -1,0 +1,15 @@
+__pycache__
+*.log
+*.pot
+*.pyc
+media/
+staticfiles/
+db.sqlite3
+*/migrations/__pycache__/
+*/migrations/*.pyc
+pylint-report.txt
+pylint-global.rc
+.coverage
+htmlcov/
+.cache/ 
+django_secrets.json
