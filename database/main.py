@@ -1,6 +1,6 @@
 import sched
 import time
-from Database import Database
+from DatabaseW import DatabaseW
 import json
 
 def scheduled_update(scheduler, interval, database):
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     configs = json.load(f)
     f.close
 
-    database = Database(configs)
+    database = DatabaseW(configs)
 
     scheduler = sched.scheduler(time.time, time.sleep)
     interval = configs['fetch_interval']
