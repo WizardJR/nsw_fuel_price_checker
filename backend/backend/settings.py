@@ -16,7 +16,7 @@ import json
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRETS_JSON = os.path.join(Path(__file__).resolve().parent, "secrets.json")
+SECRETS_JSON = os.path.join(Path(__file__).resolve().parent, "django_secrets.json")
 
 try:
     with open(SECRETS_JSON) as handle:
