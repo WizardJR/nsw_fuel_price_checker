@@ -2,3 +2,7 @@ venv
 *.log
 *.tmp
 .env
+.pytest_cache
+.vscode
+*.bak
+*.ini

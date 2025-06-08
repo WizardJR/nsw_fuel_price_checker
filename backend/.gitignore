@@ -13,3 +13,4 @@ pylint-global.rc
 htmlcov/
 .cache/ 
 django_secrets.json
+configs.json
