@@ -17,12 +17,19 @@ import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRETS_JSON = os.path.join(Path(__file__).resolve().parent, "django_secrets.json")
+CONFIGS_JSON = os.path.join(Path(__file__).resolve().parent, "configs.json")
 
 try:
     with open(SECRETS_JSON) as handle:
         SECRETS = json.load(handle)
 except IOError:
     SECRETS = {}
+
+try:
+    with open(CONFIGS_JSON) as handle:
+        CONFIGS = json.load(handle)
+except IOError:
+    CONFIGS = {}
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -45,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'fuel_backend',
 ]
 
 MIDDLEWARE = [
@@ -87,6 +95,8 @@ DATABASES = {
     }
 }
 
+# Fuel price database
+FUEL_DB_PATH = os.path.join(BASE_DIR.parent, CONFIGS['db_path'])
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
