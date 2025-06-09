@@ -12,36 +12,22 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-import json
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRETS_JSON = os.path.join(Path(__file__).resolve().parent, "django_secrets.json")
-CONFIGS_JSON = os.path.join(Path(__file__).resolve().parent, "configs.json")
-
-try:
-    with open(SECRETS_JSON) as handle:
-        SECRETS = json.load(handle)
-except IOError:
-    SECRETS = {}
-
-try:
-    with open(CONFIGS_JSON) as handle:
-        CONFIGS = json.load(handle)
-except IOError:
-    CONFIGS = {}
+load_dotenv(os.path.join(Path(__file__).resolve().parent, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRETS['secret_key']
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = SECRETS['debug']
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = SECRETS['allowed_hosts']
-
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 # Application definition
 
@@ -52,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'fuel_backend',
+    'fuel_backend',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +82,7 @@ DATABASES = {
 }
 
 # Fuel price database
-FUEL_DB_PATH = os.path.join(BASE_DIR.parent, CONFIGS['db_path'])
+FUEL_DB_PATH = os.getenv("DB_PATH")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

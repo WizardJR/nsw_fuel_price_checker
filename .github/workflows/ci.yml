@@ -1,0 +1,30 @@
+name: Django CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+
+    - name: Create .env file
+      run: |
+        echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" > backend/backend/.env
+        echo "DEBUG=False" >> backend/backend/.env
+        echo "DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}"  >> backend/backend/.env
+        echo "DB_PATH=" >> backend/backend/.env
+
+    - name: Run tests
+      run: python backend/manage.py test

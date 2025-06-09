@@ -43,16 +43,16 @@ python Searcher.py
 # Basic LSTM price predictor
 python predict.ipynb
 
-Configurations for api fetcher and database can be found in /databasae/configs_template.json
+Configurations for api fetcher and database can be found in /database/configs_template.json
   Need to insert your own credentials and rename it to configs.json
 ```
 
 
 ```shell
-cd backend
+# Please add your own environment variables to .env in /backend/backend/.env
 
 # Start backend server
-python manage.py runserver
+python ./backend/manage.py runserver
 
 ```
 
