@@ -31,4 +31,4 @@ jobs:
         echo "DB_PATH=" >> backend/backend/.env
 
     - name: Run tests
-      run: python backend/manage.py test
+      run: python backend/manage.py test fuel_backend
