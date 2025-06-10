@@ -27,6 +27,14 @@ def average_price(fuel_type=None, start_date=None, end_date=None, station_codes=
 
     return df
 
+def average_future_price(fuel_type=None):
+    db = DatabaseR(settings.FUEL_PREDICT_DB_PATH)
+    print(settings.FUEL_PREDICT_DB_PATH)
+    df = db.fetch_future_forecast(fuel_type=fuel_type)
+    db.unload()
+
+    return df
+
 @require_GET
 def average_price_daily_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
@@ -36,20 +44,49 @@ def average_price_daily_view(request):
     postcodes = request.GET.get("postcodes", None)
     interval = request.GET.get("interval", 'D')
 
-    df = average_price(fuel_type=fuel_type, start_date=start_date, end_date=end_date, station_codes=station_codes, postcodes=postcodes, interval=interval)
-    if df is None or df.empty:
-        return JsonResponse({"error": "No data found"}, status=404)
+    df = average_price(
+        fuel_type=fuel_type,
+        start_date=start_date,
+        end_date=end_date,
+        station_codes=station_codes,
+        postcodes=postcodes,
+        interval=interval
+    )
 
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    df_pivot = df.pivot_table(index="timestamp", columns="station_code", values="price")
+    past = {}
+    if df is not None and not df.empty:
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df_pivot = df.pivot_table(index="timestamp", columns="station_code", values="price")
+        df_pivot.bfill(inplace=True)
+        daily_avg = df_pivot.mean(axis=1).to_frame(name="avg_price")
+        daily_avg.reset_index(inplace=True)
+        for _, row in daily_avg.iterrows():
+            date_str = row["timestamp"].strftime("%Y-%m-%d")
+            past[date_str] = round(row["avg_price"], 2)
 
-    df_pivot.bfill(inplace=True)
+    # 2. Get future data
+    future = {}
+    df_pred = average_future_price(fuel_type)
+    if df_pred is not None and not df_pred.empty:
+        for _, row in df_pred.iterrows():
+            date_str = pd.to_datetime(row["timestamp"]).strftime("%Y-%m-%d")
+            future[date_str] = round(row["forecast_price"], 2)
 
-    daily_avg = df_pivot.mean(axis=1).to_frame(name="avg_price")
-    daily_avg.reset_index(inplace=True)
+    # 3. Merge: past data overwrites future on overlap
+    merged = future.copy()
+    merged.update(past)  # past values take precedence
 
+    # 4. Filter by date range if needed
+    if start_date:
+        merged = {k: v for k, v in merged.items() if k >= start_date}
+    if end_date:
+        merged = {k: v for k, v in merged.items() if k <= end_date}
+
+    # 5. Return as sorted list
     data = [
-        {"date": row["timestamp"].strftime("%Y-%m-%d"), "avg_price": round(row["avg_price"], 2)}
-        for _, row in daily_avg.iterrows()
+        {"date": date, "avg_price": avg_price}
+        for date, avg_price in sorted(merged.items())
     ]
+    if not data:
+        return JsonResponse({"error": "No data found"}, status=404)
     return JsonResponse(data, safe=False)
