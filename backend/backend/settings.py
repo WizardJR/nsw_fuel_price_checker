@@ -83,7 +83,7 @@ DATABASES = {
 
 # Fuel price database
 FUEL_DB_PATH = os.getenv("DB_PATH")
-
+FUEL_PREDICT_DB_PATH = os.getenv("DB_PREDICT_PATH")
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
