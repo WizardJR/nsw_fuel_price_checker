@@ -21,7 +21,6 @@ Attributes:
 '''
 def average_price(fuel_type=None, start_date=None, end_date=None, station_codes=None, postcodes=None, interval='D'):
     db = DatabaseR(settings.FUEL_DB_PATH)
-    print(settings.FUEL_DB_PATH)
     df = db.fetch_average_price(fuel_type=fuel_type, start_date=start_date, end_date=end_date, station_codes=station_codes, postcodes=postcodes, interval=interval)
     db.unload()
 
@@ -29,7 +28,6 @@ def average_price(fuel_type=None, start_date=None, end_date=None, station_codes=
 
 def average_future_price(fuel_type=None):
     db = DatabaseR(settings.FUEL_PREDICT_DB_PATH)
-    print(settings.FUEL_PREDICT_DB_PATH)
     df = db.fetch_future_forecast(fuel_type=fuel_type)
     db.unload()
 
