@@ -1,42 +1,43 @@
 import { useEffect, useState } from "react";
-const API_URL = import.meta.env.VITE_BACKEND_API_URL;
-function App() {
-  const [prices, setPrices] = useState([]);
-  const [loading, setLoading] = useState(true);
+import Home from "./Home";
+import "./App.css"
+import FuelTypeSelector from "./FuelTypeSelector";
 
+function App() {
+  const [tab, setTab] = useState(0);
+  const [fuelType, setFuelType] = useState("P95");
   useEffect(() => {
-    // fetch("http://127.0.0.1:8000/api/average_price_daily/?fuel_type=E10")
-    fetch(`${API_URL}/api/average_price_daily/?fuel_type=E10`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPrices(data);
-        setLoading(false);
-      });
+    document.title = "NSW Fuel Price Checker";
   }, []);
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto" }}>
-      <h1>Average Fuel Prices</h1>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <table border="1" cellPadding="6" style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Average Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {prices.map((row) => (
-              <tr key={row.date}>
-                <td>{row.date}</td>
-                <td>{row.avg_price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+    <div className="app-root">
+      {tab === 0 && <Home fuelType={fuelType}/>}
+      {tab === 1 && <History />}
+      {tab === 2 && <Predictions />}
+
+      <FuelTypeSelector value={fuelType} onChange={setFuelType} />
+
+      <div className="tab-list">
+        <div
+          className={`tab-item${tab === 0 ? " active" : ""}`}
+          onClick={() => setTab(0)}
+        >
+          TODAY
+        </div>
+        <div
+          className={`tab-item${tab === 1 ? " active" : ""}`}
+          onClick={() => setTab(1)}
+        >
+          HISTORY
+        </div>
+        <div
+          className={`tab-item${tab === 2 ? " active" : ""}`}
+          onClick={() => setTab(2)}
+        >
+          PREDICTIONS
+        </div>
+      </div>
     </div>
   );
 }

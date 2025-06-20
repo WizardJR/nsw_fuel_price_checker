@@ -1,42 +1,43 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+body {
+  overflow-y: hidden;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.tab-list {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #222;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.tab-item {
+  color: #fff;
+  font-size: 1rem;
+  margin: 2rem;
+  margin-bottom: .45rem;
+  margin-top: .45rem;
+  padding: .25rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
 }
 
-.card {
-  padding: 2em;
+.tab-item.active {
+  font-weight: 700;
+  background: #fff;
+  color: #222
 }
 
-.read-the-docs {
-  color: #888;
+.tab-item:hover:not(.active) {
+  background: #c73858;
 }
