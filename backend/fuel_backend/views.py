@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
+import time
+from datetime import datetime
 import sys
 import os
 import pandas as pd
@@ -33,6 +35,19 @@ def average_future_price(fuel_type=None):
 
     return df
 
+def date_to_epoch(date_str):
+    if date_str is None:
+        return None
+    dt = datetime.strptime(date_str, "%Y-%m-%d")
+    return int(time.mktime(dt.timetuple()))
+
+def date_to_epoch_end_of_day(date_str):
+    if date_str is None:
+        return None
+    dt = datetime.strptime(date_str, "%Y-%m-%d")
+    dt = dt.replace(hour=23, minute=59, second=59)
+    return int(time.mktime(dt.timetuple()))    
+
 @require_GET
 def average_price_daily_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
@@ -44,8 +59,8 @@ def average_price_daily_view(request):
 
     df = average_price(
         fuel_type=fuel_type,
-        start_date=start_date,
-        end_date=end_date,
+        start_date=date_to_epoch(start_date),
+        end_date=date_to_epoch_end_of_day(end_date),
         station_codes=station_codes,
         postcodes=postcodes,
         interval=interval
@@ -62,7 +77,6 @@ def average_price_daily_view(request):
             date_str = row["timestamp"].strftime("%Y-%m-%d")
             past[date_str] = round(row["avg_price"], 2)
 
-    # 2. Get future data
     future = {}
     df_pred = average_future_price(fuel_type)
     if df_pred is not None and not df_pred.empty:
@@ -70,17 +84,14 @@ def average_price_daily_view(request):
             date_str = pd.to_datetime(row["timestamp"]).strftime("%Y-%m-%d")
             future[date_str] = round(row["forecast_price"], 2)
 
-    # 3. Merge: past data overwrites future on overlap
     merged = future.copy()
-    merged.update(past)  # past values take precedence
+    merged.update(past)
 
-    # 4. Filter by date range if needed
     if start_date:
         merged = {k: v for k, v in merged.items() if k >= start_date}
     if end_date:
         merged = {k: v for k, v in merged.items() if k <= end_date}
 
-    # 5. Return as sorted list
     data = [
         {"date": date, "avg_price": avg_price}
         for date, avg_price in sorted(merged.items())
