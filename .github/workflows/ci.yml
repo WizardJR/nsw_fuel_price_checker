@@ -14,9 +14,6 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: List files in root
-      run: ls -l
-
     - name: Install dependencies
       working-directory: ./
       run: |
@@ -33,3 +30,16 @@ jobs:
 
     - name: Run tests
       run: python backend/manage.py test fuel_backend
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm test -- --ci
