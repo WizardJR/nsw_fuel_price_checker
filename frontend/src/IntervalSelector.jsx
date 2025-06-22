@@ -1,7 +1,6 @@
 import "./IntervalSelector.css"
-const intervalTypes = ["7", "14", "30", "180", "365"];
 
-function IntervalSelector({ value, onChange }) {
+function IntervalSelector({ value, onChange, intervalTypes}) {
   return (
     <div className="interval-type-tiles">
       {intervalTypes.map(interval => (
