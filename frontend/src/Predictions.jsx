@@ -1,21 +1,21 @@
 import { useEffect, useState } from "react";
 const API_URL = import.meta.env.VITE_BACKEND_API_URL;
-import "./History.css"
+import "./Predictions.css"
 import IntervalSelector from "./IntervalSelector";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const intervalTypes = ["7", "14", "30", "180", "365"];
+const intervalTypes = ["7", "14", "30"];
 
 const getDateNDaysAgoInclusive = (n) => {
   const d = new Date();
-  d.setDate(d.getDate() - (n - 1)); //Include first and last day
+  d.setDate(d.getDate() + (n - 1)); //Include first and last day
   return d.toISOString().slice(0, 10);
 };
 
-function History({fuelType}) {
+function Predictions({fuelType}) {
   const [data, setData] = useState(null);
   const end = new Date().toISOString().slice(0, 10);
-  const [interval, setInterval] = useState("30");
+  const [interval, setInterval] = useState("7");
   const [start, setStart] = useState(getDateNDaysAgoInclusive(interval));
 
   useEffect(() => {
@@ -23,11 +23,13 @@ function History({fuelType}) {
   }, [interval]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/average_price_daily/?fuel_type=${fuelType}&start_date=${start}&end_date=${end}`)
+    fetch(`${API_URL}/api/average_price_daily/?fuel_type=${fuelType}&start_date=${end}&end_date=${start}`)
       .then(res => res.json())
       .then(json => {
         setData(json ?? "N/A");
         console.log("Fetched data:", json);
+        console.log("Start date:", start);
+        console.log("End date:", end);
     });
 
   }, [fuelType, start]);
@@ -44,8 +46,8 @@ function History({fuelType}) {
     return (
     <div className="home-bg">
         <IntervalSelector value={interval} onChange={setInterval} intervalTypes={intervalTypes}/>
-        <h2 className="graph-title">Price Range ({fuelType})</h2>
-      <div className="history-chart-container" data-testid="history-chart-container">
+        <h2 className="graph-title">Predicted Price Range ({fuelType})</h2>
+      <div className="predictions-chart-container" data-testid="predictions-chart-container">
         <ResponsiveContainer>
           <LineChart data={data}>
             <XAxis dataKey="date" />
@@ -63,4 +65,4 @@ function History({fuelType}) {
     );
 }
 
-export default History;
+export default Predictions;
