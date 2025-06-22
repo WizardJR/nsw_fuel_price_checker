@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import Home from "./Home";
 import "./App.css"
+import Home from "./Home";
+import History from "./History";
 import FuelTypeSelector from "./FuelTypeSelector";
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
   return (
     <div className="app-root">
       {tab === 0 && <Home fuelType={fuelType}/>}
-      {tab === 1 && <History />}
+      {tab === 1 && <History fuelType={fuelType}/>}
       {tab === 2 && <Predictions />}
 
       <FuelTypeSelector value={fuelType} onChange={setFuelType} />
