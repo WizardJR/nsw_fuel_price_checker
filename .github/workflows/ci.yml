@@ -28,6 +28,7 @@ jobs:
         echo "SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" > backend/backend/.env
         echo "DEBUG=False" >> backend/backend/.env
         echo "DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}"  >> backend/backend/.env
+        echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}"  >> backend/backend/.env
         echo "DB_PATH=" >> backend/backend/.env
 
     - name: Run tests
