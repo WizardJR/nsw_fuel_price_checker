@@ -1,0 +1,8 @@
+geopy==2.4.1
+matplotlib==3.10.3
+numpy==2.3.0
+pandas==2.3.0
+python-dotenv==1.1.0
+pytz==2024.1
+scikit_learn==1.7.0
+torch==2.7.1

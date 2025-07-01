@@ -1,6 +1,5 @@
 import sqlite3
 import pandas as pd
-import geopy
 from geopy.distance import geodesic
 
 class DatabaseR:

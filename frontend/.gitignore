@@ -25,3 +25,6 @@ dist-ssr
 
 # Build folder
 build
+
+# Config files
+*.conf
