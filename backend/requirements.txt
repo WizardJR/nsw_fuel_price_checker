@@ -1,0 +1,6 @@
+Django==5.2.3
+django-cors-headers==4.7.0
+pandas==2.3.0
+python-dotenv==1.1.0
+pytz==2024.1
+Requests==2.32.4

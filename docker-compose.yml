@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db_init:
+    build:
+      context: .
+      dockerfile: database/Dockerfile_db_init
+    volumes:
+      - ./database/fuel_prices.db:/app/database/fuel_prices.db
+      - ./database/future_prices.db:/app/database/future_prices.db
+    environment:
+      DB_PATH: /app/database/fuel_prices.db
+      DB_PREDICT_PATH: /app/database/future_prices.db
+    restart: unless-stopped
+
+  db_pred:
+    build:
+      context: .
+      dockerfile: database/Dockerfile_db_pred
+    volumes:
+      - ./database/fuel_prices.db:/app/database/fuel_prices.db
+      - ./database/future_prices.db:/app/database/future_prices.db
+    environment:
+      DB_PATH: /app/database/fuel_prices.db
+      DB_PREDICT_PATH: /app/database/future_prices.db
+    depends_on:
+      db_init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./backend:/app/backend
+      - ./requirements.txt:/app/requirements.txt
+      - ./database/:/app/database
+    environment:
+      DB_PATH: /app/database/fuel_prices.db
+      DB_PREDICT_PATH: /app/database/future_prices.db
+    depends_on:
+      db_pred:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "100:100"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
