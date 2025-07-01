@@ -11,7 +11,7 @@ services:
     environment:
       DB_PATH: /app/database/fuel_prices.db
       DB_PREDICT_PATH: /app/database/future_prices.db
-    restart: unless-stopped
+    restart: always
 
   db_pred:
     build:
@@ -26,7 +26,7 @@ services:
     depends_on:
       db_init:
         condition: service_completed_successfully
-    restart: unless-stopped
+    restart: always
 
   backend:
     build:
@@ -36,7 +36,6 @@ services:
       - "8010:8010"
     volumes:
       - ./backend:/app/backend
-      - ./requirements.txt:/app/requirements.txt
       - ./database/:/app/database
     environment:
       DB_PATH: /app/database/fuel_prices.db
@@ -44,7 +43,7 @@ services:
     depends_on:
       db_pred:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
 
   frontend:
     build:
@@ -54,4 +53,4 @@ services:
       - "100:100"
     volumes:
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    restart: unless-stopped
+    restart: always
