@@ -196,15 +196,24 @@ class DatabaseR:
 
         return distances.sort_values("distance").head(count)["station_code"].astype(str).tolist()
 
-    def fetch_future_forecast(self, fuel_type):
-        cursor = self.conn.cursor()
-        cursor.execute(
-            "SELECT timestamp, forecast_price FROM future_forecast WHERE fuel_type = ?",
-            (fuel_type,)
-        )
+    def fetch_future_forecast(self, fuel_type, start_date=None, end_date=None):
+        query = f"""
+        SELECT 
+            timestamp, forecast_price
+        FROM 
+            future_forecast 
+        WHERE 
+            fuel_type = ?
+        """
+        params = [fuel_type]
 
-        rows = cursor.fetchall()
-        df = pd.DataFrame(rows,columns=["timestamp", "forecast_price"])
+        if start_date and end_date:
+            query += " AND date(timestamp, 'unixepoch') BETWEEN date(?, 'unixepoch') AND date(?, 'unixepoch')"
+            params.append(start_date)
+            params.append(end_date)
+
+
+        df = pd.read_sql_query(query, self.conn, params=params)
         return df
 
     def unload(self):

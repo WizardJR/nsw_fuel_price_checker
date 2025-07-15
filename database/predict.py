@@ -140,7 +140,7 @@ def save_forecast_to_db(db_path, dates, prices, fuel_type):
             fuel_type TEXT NOT NULL
         )
     """)
-    cursor.execute("DELETE FROM future_forecast WHERE fuel_type = ?", (fuel_type,))
+    # cursor.execute("DELETE FROM future_forecast WHERE fuel_type = ?", (fuel_type,))
 
     data = [(date.strftime("%Y-%m-%d"), float(price), fuel_type) for date, price in zip(dates, prices)]
     cursor.executemany("INSERT INTO future_forecast (timestamp, forecast_price, fuel_type) VALUES (?, ?, ?)", data)
