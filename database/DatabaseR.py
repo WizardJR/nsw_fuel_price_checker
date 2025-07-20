@@ -208,12 +208,14 @@ class DatabaseR:
         params = [fuel_type]
 
         if start_date and end_date:
-            query += " AND date(timestamp, 'unixepoch') BETWEEN date(?, 'unixepoch') AND date(?, 'unixepoch')"
+            query += " AND timestamp BETWEEN ? AND ?"
             params.append(start_date)
             params.append(end_date)
 
 
         df = pd.read_sql_query(query, self.conn, params=params)
+        if 'timestamp' in df.columns:
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
         return df
 
     def unload(self):

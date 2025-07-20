@@ -2,7 +2,7 @@ from django.conf import settings
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import os
 import pandas as pd
@@ -48,8 +48,9 @@ def date_to_epoch_end_of_day(date_str):
 @require_GET
 def average_price_daily_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
-    start_date = request.GET.get("start_date", None)
-    end_date = request.GET.get("end_date", None)
+    # Restrict max historical data returned to 1 year
+    start_date = request.GET.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d"))
+    end_date = request.GET.get("end_date", (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"))
     station_codes = request.GET.get("station_codes", None)
     postcodes = request.GET.get("postcodes", None)
     interval = request.GET.get("interval", 'D')
@@ -102,6 +103,7 @@ def average_predict_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
     start_date = request.GET.get("start_date", None)
     end_date = request.GET.get("end_date", None)
+    # Per station prediction later
     # station_codes = request.GET.get("station_codes", None)
     # postcodes = request.GET.get("postcodes", None)
     # interval = request.GET.get("interval", 'D')
