@@ -7,11 +7,9 @@ function Home({fuelType}) {
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
-    console.log(today)
     fetch(`${API_URL}/api/average_price_daily/?fuel_type=${fuelType}&start_date=${today}&end_date=${today}`)
       .then(res => res.json())
       .then(data => {
-        console.log("Fetched data:", data);
         setAvg(data[0]?.avg_price ?? "N/A");
     });
   }, [fuelType]);

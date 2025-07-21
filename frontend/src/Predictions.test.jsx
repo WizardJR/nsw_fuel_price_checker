@@ -49,6 +49,6 @@ test("updates graph when interval is changed", async () => {
   await userEvent.click(button);
 
   await waitFor(() => {
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenCalledTimes(4); // 2 for histData, 2 for predData
   });
 });

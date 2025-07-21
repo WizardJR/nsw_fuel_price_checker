@@ -39,9 +39,6 @@ function Predictions({fuelType}) {
       .then(res => res.json())
       .then(json => {
         setHistData(json ?? "N/A");
-        console.log("Hist data:", json);
-        console.log("Hist Start date:", histStart);
-        console.log("End date:", end);
     });
   }, [fuelType, histStart]);
   
@@ -50,9 +47,6 @@ function Predictions({fuelType}) {
       .then(res => res.json())
       .then(json => {
         setPredData(json ?? "N/A");
-        console.log("Pred data:", json);
-        console.log("Pred Start date:", predStart);
-        console.log("End date:", end);
     });
   }, [fuelType, predEnd]);
 
@@ -86,8 +80,6 @@ function Predictions({fuelType}) {
   }
 
   mergedData.push(...Array.from(mergedDataMap.values()).sort((a, b) => new Date(a.date) - new Date(b.date)));
-
-  console.log("Merged data:", mergedData)
 
     return (
     <div className="home-bg">

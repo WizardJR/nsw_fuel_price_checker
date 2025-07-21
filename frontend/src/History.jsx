@@ -27,7 +27,6 @@ function History({fuelType}) {
       .then(res => res.json())
       .then(json => {
         setData(json ?? "N/A");
-        console.log("Fetched data:", json);
     });
 
   }, [fuelType, start]);
