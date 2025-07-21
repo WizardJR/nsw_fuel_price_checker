@@ -101,8 +101,8 @@ def average_price_daily_view(request):
 @require_GET
 def average_predict_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
-    start_date = request.GET.get("start_date", None)
-    end_date = request.GET.get("end_date", None)
+    start_date = request.GET.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d"))
+    end_date = request.GET.get("end_date", (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"))
     # Per station prediction later
     # station_codes = request.GET.get("station_codes", None)
     # postcodes = request.GET.get("postcodes", None)
