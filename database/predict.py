@@ -135,14 +135,13 @@ def save_forecast_to_db(db_path, dates, prices, fuel_type):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS future_forecast (
             id INTEGER PRIMARY KEY,
-            timestamp TEXT NOT NULL,
+            timestamp INTEGER NOT NULL,
             forecast_price REAL NOT NULL,
             fuel_type TEXT NOT NULL
         )
     """)
-    cursor.execute("DELETE FROM future_forecast WHERE fuel_type = ?", (fuel_type,))
 
-    data = [(date.strftime("%Y-%m-%d"), float(price), fuel_type) for date, price in zip(dates, prices)]
+    data = [(int(date.timestamp()), float(price), fuel_type) for date, price in zip(dates, prices)]
     cursor.executemany("INSERT INTO future_forecast (timestamp, forecast_price, fuel_type) VALUES (?, ?, ?)", data)
     conn.commit()
     conn.close()

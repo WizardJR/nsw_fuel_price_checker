@@ -2,7 +2,7 @@ from django.conf import settings
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import os
 import pandas as pd
@@ -24,14 +24,12 @@ def average_price(fuel_type=None, start_date=None, end_date=None, station_codes=
     db = DatabaseR(settings.FUEL_DB_PATH)
     df = db.fetch_average_price(fuel_type=fuel_type, start_date=start_date, end_date=end_date, station_codes=station_codes, postcodes=postcodes, interval=interval)
     db.unload()
-
     return df
 
-def average_future_price(fuel_type=None):
+def average_future_price(fuel_type=None, start_date=None, end_date=None):
     db = DatabaseR(settings.FUEL_PREDICT_DB_PATH)
-    df = db.fetch_future_forecast(fuel_type=fuel_type)
+    df = db.fetch_future_forecast(fuel_type=fuel_type, start_date=start_date, end_date=end_date)
     db.unload()
-
     return df
 
 def date_to_epoch(date_str):
@@ -50,8 +48,9 @@ def date_to_epoch_end_of_day(date_str):
 @require_GET
 def average_price_daily_view(request):
     fuel_type = request.GET.get("fuel_type", "E10")
-    start_date = request.GET.get("start_date", None)
-    end_date = request.GET.get("end_date", None)
+    # Restrict max historical data returned to 1 year
+    start_date = request.GET.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d"))
+    end_date = request.GET.get("end_date", (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"))
     station_codes = request.GET.get("station_codes", None)
     postcodes = request.GET.get("postcodes", None)
     interval = request.GET.get("interval", 'D')
@@ -94,6 +93,31 @@ def average_price_daily_view(request):
     data = [
         {"date": date, "avg_price": avg_price}
         for date, avg_price in sorted(merged.items())
+    ]
+    if not data:
+        return JsonResponse({"error": "No data found"}, status=404)
+    return JsonResponse(data, safe=False)
+
+@require_GET
+def average_predict_view(request):
+    fuel_type = request.GET.get("fuel_type", "E10")
+    start_date = request.GET.get("start_date", (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d"))
+    end_date = request.GET.get("end_date", (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"))
+    # Per station prediction later
+    # station_codes = request.GET.get("station_codes", None)
+    # postcodes = request.GET.get("postcodes", None)
+    # interval = request.GET.get("interval", 'D')
+
+    future = {}
+    df_pred = average_future_price(fuel_type, start_date=date_to_epoch(start_date), end_date=date_to_epoch_end_of_day(end_date))
+    if df_pred is not None and not df_pred.empty:
+        for _, row in df_pred.iterrows():
+            date_str = pd.to_datetime(row["timestamp"]).strftime("%Y-%m-%d")
+            future[date_str] = round(row["forecast_price"], 2)
+
+    data = [
+        {"date": date, "avg_price": avg_price}
+        for date, avg_price in sorted(future.items())
     ]
     if not data:
         return JsonResponse({"error": "No data found"}, status=404)

@@ -11,16 +11,17 @@ class AveragePriceViewTest(TestCase):
     @patch("fuel_backend.views.DatabaseR")
     def test_average_price_daily_view_get(self, MockDatabaseR):
         mock_df = pd.DataFrame({
-            "timestamp": pd.date_range(start="2024-06-01", periods=3, freq='D'),
+            "timestamp": pd.date_range(start="2025-07-01", periods=3, freq='D'),
             "station_code": ["123", "123", "123"],
-            "price": [170.1, 171.5, 172.0]
+            "price": [170.1, 171.5, 172.0],
+            "fuel_type": ["P95" for _ in range(3)]
         })
 
         instance = MockDatabaseR.return_value
         instance.fetch_average_price.return_value = mock_df
         instance.unload.return_value = None
         
-        response = self.client.get("/api/average_price_daily/")
+        response = self.client.get("/api/average_price_daily/?fuel_type=P95&start_date=2025-07-01&end_date=2025-07-31")
         assert response.status_code == 200
     
     @patch("fuel_backend.views.DatabaseR")
@@ -29,22 +30,23 @@ class AveragePriceViewTest(TestCase):
         instance.fetch_average_price.return_value = pd.DataFrame()
         instance.unload.return_value = None
     
-        response = self.client.post("/api/average_price_daily/", {"fuel_type": "E10"})
+        response = self.client.post("/api/average_price_daily/?fuel_type=P95&start_date=2025-07-01&end_date=2025-07-31", {"fuel_type": "E10"})
         self.assertEqual(response.status_code, 405)
 
     @patch("fuel_backend.views.DatabaseR")
     def test_average_price_daily_view_success(self, MockDatabaseR):
         mock_df = pd.DataFrame({
-            "timestamp": pd.date_range(start="2024-06-01", periods=3, freq='D'),
+            "timestamp": pd.date_range(start="2025-07-01", periods=3, freq='D'),
             "station_code": ["123", "123", "123"],
-            "price": [170.1, 171.5, 172.0]
+            "price": [170.1, 171.5, 172.0],
+            "fuel_type": ["P95" for _ in range(3)]
         })
 
         instance = MockDatabaseR.return_value
         instance.fetch_average_price.return_value = mock_df
         instance.unload.return_value = None
 
-        response = self.client.get("/api/average_price_daily/?fuel_type=E10")
+        response = self.client.get("/api/average_price_daily/?fuel_type=P95&start_date=2025-07-01&end_date=2025-07-31")
 
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response.json(), list)
@@ -58,7 +60,7 @@ class AveragePriceViewTest(TestCase):
         instance.fetch_average_price.return_value = pd.DataFrame()
         instance.unload.return_value = None
 
-        response = self.client.get("/api/average_price_daily/?fuel_type=E10")
+        response = self.client.get("/api/average_price_daily/")
 
         self.assertEqual(response.status_code, 404)
         self.assertIn("error", response.json())
@@ -72,11 +74,12 @@ class AveragePriceViewTest(TestCase):
 
         future_df = pd.DataFrame({
             "timestamp": ["2024-07-01", "2024-07-02"],
-            "forecast_price": [180.0, 181.0]
+            "forecast_price": [180.0, 181.0],
+            "fuel_type": ["P95" for _ in range(2)]
         })
 
         with patch("fuel_backend.views.average_future_price", return_value=future_df):
-            response = self.client.get("/api/average_price_daily/?fuel_type=E10")
+            response = self.client.get("/api/average_price_predict/?fuel_type=P95&start_date=2025-07-01&end_date=2025-07-31")
             self.assertEqual(response.status_code, 200)
             data = response.json()
             self.assertEqual(len(data), 2)
@@ -86,23 +89,24 @@ class AveragePriceViewTest(TestCase):
     def test_average_price_daily_merge_past_and_future(self, MockDatabaseR):
         # Overlapping date: past should overwrite future
         mock_df = pd.DataFrame({
-            "timestamp": pd.to_datetime(["2024-07-01", "2024-07-02"]),
+            "timestamp": pd.to_datetime(["2025-07-01", "2025-07-02"]),
             "station_code": ["123", "123"],
-            "price": [170.0, 171.0]
+            "price": [170.0, 171.0],
+            "fuel_type": ["P95" for _ in range(2)]
         })
         instance = MockDatabaseR.return_value
         instance.fetch_average_price.return_value = mock_df
         instance.unload.return_value = None
 
         future_df = pd.DataFrame({
-            "timestamp": ["2024-07-02", "2024-07-03"],
-            "forecast_price": [999.0, 172.0]
+            "timestamp": ["2025-07-02", "2025-07-03"],
+            "forecast_price": [999.0, 172.0],
+            "fuel_type": ["P95" for _ in range(2)]
         })
 
         with patch("fuel_backend.views.average_future_price", return_value=future_df):
-            response = self.client.get("/api/average_price_daily/?fuel_type=E10")
+            response = self.client.get("/api/average_price_daily/?fuel_type=P95&start_date=2025-07-01&end_date=2025-07-31")
             self.assertEqual(response.status_code, 200)
             data = response.json()
-            # 2024-07-02 should have the past value, not 999.0
-            self.assertTrue(any(d["date"] == "2024-07-02" and d["avg_price"] == 171.0 for d in data))
-            self.assertTrue(any(d["date"] == "2024-07-03" and d["avg_price"] == 172.0 for d in data))
+            self.assertTrue(any(d["date"] == "2025-07-02" and d["avg_price"] == 171.0 for d in data))
+            self.assertTrue(any(d["date"] == "2025-07-03" and d["avg_price"] == 172.0 for d in data))
