@@ -6,17 +6,25 @@ import pytz
 import re
 
 class DatabaseW(DatabaseR):
-    def __init__(self, configs):
-        super().__init__(configs['db_name'])
-        self.start_timestamp = configs['start_timestamp']
-        self.fetcher = Fetcher(configs['AUTHORIZATION_HEADER'], configs['API_KEY'])
+    def __init__(self, db_name, start_timestamp, auth_header, api_key):
+        super().__init__(db_name)
+        self.start_timestamp = start_timestamp
+        self.fetcher = Fetcher(auth_header, api_key)
 
     def update_db(self):
         all_prices = self.fetcher.fetch_all_v1_data()
+        if 'stations' not in all_prices or 'prices' not in all_prices:
+            if 'errorDetails' in all_prices:
+                print("Error fetching data:", all_prices['errorDetails'])
+            return 1
         self.save_stations_to_db(all_prices['stations'])
         self.save_prices_to_db(all_prices['prices'])
 
         new_prices = self.fetcher.fetch_new_v1_data()
+        if 'stations' not in new_prices or 'prices' not in new_prices:
+            if 'errorDetails' in new_prices:
+                print("Error fetching data:", new_prices['errorDetails'])
+            return 1
         self.save_stations_to_db(new_prices['stations'])
         self.save_prices_to_db(new_prices['prices'])
 
