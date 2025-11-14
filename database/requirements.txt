@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 geopy==2.4.1
 matplotlib==3.10.3
 numpy==2.3.0
