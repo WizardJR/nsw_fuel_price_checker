@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r /app/database/requirements.txt
 
 WORKDIR /app/database
 
-CMD ["python", "schedule_predict.py", "day"]
+CMD ["python", "schedule_predict.py", "hour"]

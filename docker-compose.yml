@@ -25,7 +25,7 @@ services:
       DB_PREDICT_PATH: /app/database/future_prices.db
     depends_on:
       db_init:
-        condition: service_completed_successfully
+        condition: service_started
     restart: always
 
   backend:

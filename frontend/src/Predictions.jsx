@@ -22,7 +22,7 @@ function Predictions({fuelType}) {
   const [histData, setHistData] = useState(null);
   const [predData, setPredData] = useState(null);
   const end = new Date().toISOString().slice(0, 10);
-  const [interval, setInterval] = useState("7");
+  const [interval, setInterval] = useState("180");
   const [histStart, setHistStart] = useState(getDateNDaysAgoInclusive(interval));
   const [predEnd, setPredEnd] = useState(getDateNDaysAfterInclusive(interval));
   

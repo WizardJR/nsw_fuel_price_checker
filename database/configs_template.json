@@ -1,7 +1,0 @@
-{
-    "AUTHORIZATION_HEADER": "Basic",
-    "API_KEY": "",
-    "start_timestamp": 1719964800,
-    "db_name": "fuel_prices.db",
-    "fetch_interval": 60
-}

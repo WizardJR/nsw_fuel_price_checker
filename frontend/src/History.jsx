@@ -15,7 +15,7 @@ const getDateNDaysAgoInclusive = (n) => {
 function History({fuelType}) {
   const [data, setData] = useState(null);
   const end = new Date().toISOString().slice(0, 10);
-  const [interval, setInterval] = useState("30");
+  const [interval, setInterval] = useState("180");
   const [start, setStart] = useState(getDateNDaysAgoInclusive(interval));
 
   useEffect(() => {
