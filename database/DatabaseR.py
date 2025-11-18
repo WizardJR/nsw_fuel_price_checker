@@ -1,6 +1,8 @@
 import sqlite3
 import pandas as pd
 from geopy.distance import geodesic
+import os
+
 
 class DatabaseR:
     def __init__(self, db_path):
@@ -46,6 +48,8 @@ class DatabaseR:
             stations.name, 
             stations.address, 
             stations.postcode,
+            stations.latitude,
+            stations.longitude,
             prices.fuel_type, 
             prices.price, 
             prices.timestamp, 
@@ -164,37 +168,71 @@ class DatabaseR:
         df = pd.read_sql_query(query, self.conn, params=params)
         return df
 
-    def fetch_all_station_locations(self):
-        query = """
-        SELECT station_code, latitude, longitude
-        FROM stations
-        WHERE latitude IS NOT NULL AND longitude IS NOT NULL
-        """
-        result = self.conn.execute(query).fetchall()
-        columns = ["station_code", "latitude", "longitude"]
-        return pd.DataFrame(result, columns=columns)
+    def suburb_to_coordinates(self, postcode, suburb=None, postcode_db_path = None):
+        if not os.path.exists(postcode_db_path):
+            return None
+        postcode = str(postcode).zfill(4)
+        conn = sqlite3.connect(postcode_db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
 
-    def get_nearest_stations(self, target_station_code, fuel_type, count=3):
-        locations_df = self.fetch_all_station_locations()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        print(cursor.fetchall())
+        cursor.execute("""
+            SELECT suburb, latitude, longitude
+            FROM postcodes
+            WHERE postcode = ?
+        """, (postcode,))
         
-        available_df = self.fetch_average_price(fuel_type=fuel_type, interval="D")
-        stations_with_fuel = available_df["station_code"].unique().astype(str)
+        rows = cursor.fetchall()
+        conn.close()
+        
+        if not rows:
+            return None
 
-        locations_df = locations_df[locations_df["station_code"].astype(str).isin(stations_with_fuel)]
+        if suburb:
+            suburb = suburb.strip().lower()
+            for row in rows:
+                if row["suburb"].strip().lower() == suburb:
+                    return row["latitude"], row["longitude"]        
 
-        if target_station_code not in locations_df["station_code"].astype(str).values:
-            raise ValueError(f"Target station {target_station_code} not found in filtered station list for fuel type {fuel_type}.")
+        return rows[0]["latitude"], rows[0]["longitude"]
 
-        target_row = locations_df[locations_df["station_code"].astype(str) == target_station_code].iloc[0]
-        target_lat, target_lon = target_row["latitude"], target_row["longitude"]
+    def get_nearby_suburbs(self, latitude, longitude, radius_km=10, postcode_db_path = None):
+        """
+        Returns a list of nearby postcodes within a radius from the given coordinates.
+        Each postcode appears only once, with one representative suburb.
+        """
+        # Load postcode data into pandas
+        if not os.path.exists(postcode_db_path):
+            return None
+        conn = sqlite3.connect(postcode_db_path)
+        df = pd.read_sql_query(
+            "SELECT postcode, suburb, latitude, longitude FROM postcodes",
+            conn
+        )
+        conn.close()
 
-        distances = locations_df[locations_df["station_code"].astype(str) != target_station_code].copy()
-        distances["distance"] = distances.apply(
-            lambda row: geodesic((target_lat, target_lon), (row["latitude"], row["longitude"])).km,
+        # Ensure postcode is string with leading zeros
+        df["postcode"] = df["postcode"].astype(str).str.zfill(4)
+
+        # Keep only one suburb per postcode (first occurrence)
+        df = df.drop_duplicates(subset="postcode", keep="first")
+
+        # Compute distance for each row
+        df["distance_km"] = df.apply(
+            lambda row: geodesic((latitude, longitude), (row["latitude"], row["longitude"])).km,
             axis=1
         )
 
-        return distances.sort_values("distance").head(count)["station_code"].astype(str).tolist()
+        # Filter by radius
+        nearby_df = df[df["distance_km"] <= radius_km].copy()
+
+        # Sort by distance
+        nearby_df.sort_values("distance_km", inplace=True)
+
+        # Convert to list of dicts
+        return nearby_df.to_dict("records")
 
     def fetch_future_forecast(self, fuel_type, start_date=None, end_date=None):
         query = f"""
