@@ -1,0 +1,85 @@
+.home-bg-dark {
+  height: 100vh;
+  width: 100vw;
+  background: #222222;
+  color: #222;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  position:relative;
+}
+
+.stations-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 12px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  max-height: 70%;
+  position: relative;
+  left: 20px; 
+}
+
+.stations-list {
+  flex-grow: 1;     /* takes remaining space */
+  overflow-y: auto; /* scrollable */
+}
+
+.station-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #323232;
+  color: white;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.station-left {
+  flex: 1;
+}
+
+.station-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.station-address {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.station-distance {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.station-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.station-price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #4df2a8;
+}
+
+.stations-loading,
+.stations-error {
+  text-align: center;
+  margin-top: 20px;
+  opacity: 0.8;
+  color: #ffffff;
+}
+
+.postcode-search {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
