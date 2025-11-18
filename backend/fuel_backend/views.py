@@ -122,3 +122,37 @@ def average_predict_view(request):
     if not data:
         return JsonResponse({"error": "No data found"}, status=404)
     return JsonResponse(data, safe=False)
+
+@require_GET
+def nearby_stations(request):
+    db = DatabaseR(settings.FUEL_DB_PATH)
+    fuel_type = request.GET.get("fuel_type", "E10")
+    suburb = request.GET.get("suburb", None)
+    postcode = request.GET.get("postcode", None)
+
+    if not postcode:
+        return JsonResponse({"error": "No postcode"}, status=400)
+    
+    coords = db.suburb_to_coordinates(postcode, suburb, postcode_db_path=settings.POSTCODE_DB_PATH)
+    suburbs = db.get_nearby_suburbs(latitude=coords[0], longitude=coords[1], radius_km=5, postcode_db_path=settings.POSTCODE_DB_PATH)
+
+    if not suburbs:
+        return JsonResponse({"error": "No nearby suburbs found"}, status=404)
+    
+    nearby_postcodes = [s["postcode"] for s in suburbs]
+
+    df = db.fetch_data(
+        fuel_type=fuel_type,
+        postcode=nearby_postcodes,
+        is_newest=True
+    )
+
+    if df.empty:
+        return JsonResponse({"error": "No price data found"}, status=404)
+    if "station_code" in df.columns:
+        df = df.drop(columns=["station_code"])
+
+    results = df.to_dict(orient="records")
+    sorted_results = sorted(results, key=lambda x: x["price"])
+    
+    return JsonResponse(sorted_results, safe=False)

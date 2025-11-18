@@ -110,3 +110,88 @@ class AveragePriceViewTest(TestCase):
             data = response.json()
             self.assertTrue(any(d["date"] == "2025-07-02" and d["avg_price"] == 171.0 for d in data))
             self.assertTrue(any(d["date"] == "2025-07-03" and d["avg_price"] == 172.0 for d in data))
+
+class NearbyStationsViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @patch("fuel_backend.views.DatabaseR")
+    def test_nearby_stations_view_get_success(self, MockDatabaseR):
+        #  Test with valid postcode and fuel type
+        instance = MockDatabaseR.return_value
+
+        instance.suburb_to_coordinates.return_value = (-33.8833, 151.1000)
+
+        instance.get_nearby_suburbs.return_value = [
+            {"suburb": "Strathfield", "postcode": "2135"},
+            {"suburb": "Burwood", "postcode": "2134"},
+        ]
+
+        mock_df = pd.DataFrame([
+            {
+                "name": "7-Eleven Burwood", 
+                "address": "Cnr Parramatta & Shaftsbury Rds, Burwood NSW 2134",  
+                "postcode": "2134", 
+                "latitude": -33.869406, 
+                "longitude": 151.108603,
+                "fuel_type": "P98",
+                "price": 180.0,
+                "timestamp": 1762923963
+            }, {
+                "name": "Coles Express Strathfield", 
+                "address": "9 Albert Rd, Strathfield NSW 2135",  
+                "postcode": "2135", 
+                "latitude": -33.870803, 
+                "longitude": 151.092355,
+                "fuel_type": "P98",
+                "price": 189.9,
+                "timestamp": 1729293349
+            },
+        ])
+
+        instance.fetch_data.return_value = mock_df
+        instance.unload.return_value = None
+        
+        response = self.client.get("/api/nearby_stations/?fuel_type=P98&postcode=2134")
+        data = response.json()
+
+        assert response.status_code == 200
+        assert data[0]["name"] == "7-Eleven Burwood"
+        assert data[1]["name"] == "Coles Express Strathfield"
+        assert data[0]["price"] == 180.0
+        assert data[1]["price"] == 189.9
+
+    @patch("fuel_backend.views.DatabaseR")
+    def test_missing_postcode(self, MockDatabaseR):
+        # Test request without postcode
+        response = self.client.get("/api/nearby_stations/?fuel_type=P98")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+    @patch("fuel_backend.views.DatabaseR")
+    def test_no_nearby_suburbs(self, MockDatabaseR):
+        # Test with postcode that yields no nearby suburbs
+        instance = MockDatabaseR.return_value
+
+        instance.suburb_to_coordinates.return_value = (-33.8833, 151.1)
+        instance.get_nearby_suburbs.return_value = []
+
+        response = self.client.get("/api/nearby_stations/?postcode=2134")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["error"], "No nearby suburbs found")
+
+    @patch("fuel_backend.views.DatabaseR")
+    def test_no_price_data(self, MockDatabaseR):
+        # Test with valid postcode but no price data
+        instance = MockDatabaseR.return_value
+
+        instance.suburb_to_coordinates.return_value = (-33.8833, 151.1)
+        instance.get_nearby_suburbs.return_value = [
+            {"suburb": "Burwood", "postcode": "2134"}
+        ]
+
+        instance.fetch_data.return_value = pd.DataFrame()
+
+        resp = self.client.get("/api/nearby_stations/?postcode=2134")
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json()["error"], "No price data found")
